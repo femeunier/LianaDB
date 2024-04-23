@@ -1,5 +1,3 @@
-rm(list = ls())
-
 library(RMySQL)
 library(dplyr)
 library(LianaDB)

@@ -5,6 +5,7 @@ rm(list = ls())
 library(RMySQL)
 library(LianaDB)
 
+################################################################################
 # Option 1: Import database
 # sudo mysql
 # CREATE DATABASE LianaDB;
@@ -12,7 +13,6 @@ library(LianaDB)
 # mysql --user root --password LianaDB < LianaDB.sql
 
 ################################################################################
-
 # Option 2: create from scratch
 # Preliminary steps (Linux)
 # sudo mysql
@@ -29,6 +29,19 @@ source("./scripts/create.covariates.R")
 source("./scripts/create.traits.R")
 
 ################################################################################
+# Option 3: use R files
+# LianaDB <- list(citations = citations,
+#                 sites = sites,
+#                 species = species,
+#                 traits = traits,
+#                 variables = variables,
+#                 treatment = treatment,
+#                 covariates = covariates)
+# saveRDS(LianaDB,
+#         "./databases/LianaDB.RDS")
+
+LianaDB <- readRDS("./databases/LianaDB.RDS")
+
 # save Database
 # setwd("./databases/")
 # system2("mysqldump",c("-uuser -pP@ssw0rld! LianaDB > LianaDB_new.sql"))
