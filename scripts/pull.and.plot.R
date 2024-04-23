@@ -17,30 +17,53 @@ traits <- get.table(myDB,"traits")
 species <- get.table(myDB,"species") %>%
   rename(species_id = id)
 sites <- get.table(myDB,"sites") %>%
-  rename(site_id = id)
+  rename(site_id = id,
+         site_name = name)
 variables <- get.table(myDB,"variables") %>%
   rename(variable_id = id,
          variable_name = name)
+citations <- get.table(myDB,"citations")
 
 # ################################################################################
 # # Alternatively
 # myDB <- readRDS("./databases/LianaDB.RDS")
 # traits <- myDB[["traits"]]
-# species <- myDB[["species"]]
-# variables <- myDB[["variables"]]
-# sites <- myDB[["sites"]]
+# species <- myDB[["species"]] %>%
+# rename(species_id = id)
+# variables <- myDB[["variables"]] %>%
+# rename(variable_id = id,
+# variable_name = name)
+# sites <- myDB[["sites"]] %>%
+# rename(site_id = id,
+# site_name = name)
+# citations <- myDB[["citations"]]
 
 all.df <- traits %>%
   left_join(species,
             by = "species_id") %>%
   left_join(variables,
-            by = "variable_id")
+            by = "variable_id") %>%
+  left_join(sites %>%
+              dplyr::select(site_id,site_name,lat,lon,country),
+            by = "site_id") %>%
+  mutate(mean.transform = case_when(variable_name %in% c("ks","kl","Al.As") ~ log10(mean),
+                          TRUE ~ mean))
 
 ggplot(data = all.df) +
-  geom_boxplot(aes(x = growth_form, fill = growth_form,
-                   y = mean)) +
+  geom_violin(aes(x = growth_form,
+                   fill = growth_form,
+                   y = mean.transform),
+              width=0.5) +
+  geom_boxplot(aes(x = growth_form,
+                   y = mean.transform),
+               fill = NA,
+               width=0.1,
+               color = "black",
+               alpha = 1) +
   facet_wrap(~ variable_name, scales = "free_y") +
-  theme_bw()
+  theme_bw() +
+  labs(x = "") +
+  guides(fill = "none")
 
 ################################################################################
 # Table 1
@@ -54,6 +77,8 @@ all.df %>%
             .groups = "keep")
 
 ###############################################################################
+# Barplot per species
+
 df.species <- all.df %>%
   group_by(scientific_name) %>%
   summarise(N = n(),
@@ -79,15 +104,15 @@ ggplot(data = df.species %>%
 
 
 ###############################################################################
+# Worldmap with N
+
 df.sites <- all.df %>%
-  group_by(site_id) %>%
+  group_by(site_id,site_name,country,lat,lon) %>%
   summarise(N = n(),
             .groups = "keep") %>%
-  left_join(sites,
-            by = "site_id") %>%
   mutate(site.group = case_when(country == "Panama" ~ "Panama",
-                                country == "Australia" & name != "New South Wales" ~ "Australia.group",
-                                TRUE ~ name)) %>%
+                                country == "Australia" & site_name != "New South Wales" ~ "Australia.group",
+                                TRUE ~ site_name)) %>%
   group_by(site.group) %>%
   summarise(N = sum(N),
             lat = mean(lat),
@@ -117,4 +142,27 @@ ggplot() +
         strip.text = element_blank()) +
   guides(size = "none")
 
+################################################################################
+# Example of relationship
 
+selected.var <- variables %>%
+  filter(variable_name %in% c("WD","ks"))
+
+selected.traits <- all.df %>%
+  filter(variable_id %in% selected.var[["variable_id"]])
+
+selected.traits.sum <- selected.traits %>%
+  group_by(variable_name,species_id,citation_id,site_name,treatment_id) %>%
+  summarise(mean.m = mean(mean,na.rm = TRUE),
+            .groups = "keep") %>%
+  pivot_wider(names_from = variable_name,
+              values_from = mean.m)
+
+ggplot(data = selected.traits.sum,
+       aes(x = WD,
+           y = log10(ks))) +
+  geom_point(aes(color = as.factor(site_name))) +
+  stat_smooth(method = "lm",
+              color = "black",
+              fill = "lightgrey") +
+  theme_bw()
