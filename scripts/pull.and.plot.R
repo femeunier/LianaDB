@@ -166,3 +166,5 @@ ggplot(data = selected.traits.sum,
               color = "black",
               fill = "lightgrey") +
   theme_bw()
+
+dbDisconnectAll()
