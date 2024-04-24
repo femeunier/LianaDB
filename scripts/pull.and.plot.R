@@ -5,6 +5,7 @@ library(ggplot2)
 library(LianaDB)
 library(RMySQL)
 library(ggthemes)
+library(tidyr)
 
 myDB = dbConnect(RMySQL::MySQL(),
                  dbname='LianaDB',
@@ -15,12 +16,12 @@ myDB = dbConnect(RMySQL::MySQL(),
 
 traits <- get.table(myDB,"traits")
 species <- get.table(myDB,"species") %>%
-  rename(species_id = id)
+  dplyr::rename(species_id = id)
 sites <- get.table(myDB,"sites") %>%
-  rename(site_id = id,
+  dplyr::rename(site_id = id,
          site_name = name)
 variables <- get.table(myDB,"variables") %>%
-  rename(variable_id = id,
+  dplyr::rename(variable_id = id,
          variable_name = name)
 citations <- get.table(myDB,"citations")
 
@@ -29,12 +30,12 @@ citations <- get.table(myDB,"citations")
 # myDB <- readRDS("./databases/LianaDB.RDS")
 # traits <- myDB[["traits"]]
 # species <- myDB[["species"]] %>%
-# rename(species_id = id)
+# dplyr::rename(species_id = id)
 # variables <- myDB[["variables"]] %>%
-# rename(variable_id = id,
+# dplyr::rename(variable_id = id,
 # variable_name = name)
 # sites <- myDB[["sites"]] %>%
-# rename(site_id = id,
+# dplyr::rename(site_id = id,
 # site_name = name)
 # citations <- myDB[["citations"]]
 
@@ -71,7 +72,7 @@ ggplot(data = all.df) +
 all.df %>%
   filter(growth_form == "liana") %>%
   group_by(variable_name) %>%
-  summarise(m = mean(mean,na.rm = TRUE),
+  dplyr::summarise(m = mean(mean,na.rm = TRUE),
             Min = min(mean,na.rm = TRUE),
             Max = max(mean,na.rm = TRUE),
 
@@ -91,13 +92,13 @@ all.df %>%
 
 df.species <- all.df %>%
   group_by(scientific_name) %>%
-  summarise(N = n(),
+  dplyr::summarise(N = n(),
             .groups = "keep") %>%
   mutate(species.group = case_when(tolower(scientific_name) == "unknown" ~ "Other",
                                    N > 10 ~ scientific_name,
                                    TRUE ~ "Other")) %>%
   group_by(species.group) %>%
-  summarise(N = sum(N),
+  dplyr::summarise(N = sum(N),
             .groups = "keep") %>%
   arrange(desc(N))
 
@@ -118,13 +119,13 @@ ggplot(data = df.species %>%
 
 df.sites <- all.df %>%
   group_by(site_id,site_name,country,lat,lon) %>%
-  summarise(N = n(),
+  dplyr::summarise(N = n(),
             .groups = "keep") %>%
   mutate(site.group = case_when(country == "Panama" ~ "Panama",
                                 country == "Australia" & site_name != "New South Wales" ~ "Australia.group",
                                 TRUE ~ site_name)) %>%
   group_by(site.group) %>%
-  summarise(N = sum(N),
+  dplyr::summarise(N = sum(N),
             lat = mean(lat),
             lon = mean(lon),
             .groups = "keep")
@@ -163,7 +164,7 @@ selected.traits <- all.df %>%
 
 selected.traits.sum <- selected.traits %>%
   group_by(variable_name,species_id,citation_id,site_name,treatment_id) %>%
-  summarise(mean.m = mean(mean,na.rm = TRUE),
+  dplyr::summarise(mean.m = mean(mean,na.rm = TRUE),
             .groups = "keep") %>%
   pivot_wider(names_from = variable_name,
               values_from = mean.m)
@@ -176,5 +177,8 @@ ggplot(data = selected.traits.sum,
               color = "black",
               fill = "lightgrey") +
   theme_bw()
+
+summary(lm(data = selected.traits.sum,
+           formula = log10(ks) ~ WD))
 
 dbDisconnectAll()

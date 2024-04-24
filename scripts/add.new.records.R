@@ -77,8 +77,8 @@ for (irow in seq(1,nrow(new.record))){
 # Step 3: Adding species
 
 new.species <- read.csv("./data/new.species.csv",header = FALSE) %>%
-  rename(short = V1,
-         scientific.name = V2) %>%
+  dplyr::rename(short = V1,
+                scientific.name = V2) %>%
   mutate(growthform = "liana",
          genus = stringr::word(scientific.name,1),
          species = stringr::word(scientific.name,2)) %>%
@@ -92,7 +92,7 @@ for (irow in seq(1,nrow(new.species))){
   if (nrow(match_df(species %>%
                     dplyr::select(scientific_name,
                                   genus,species) %>%
-                    rename(scientific.name = scientific_name),
+                    dplyr::rename(scientific.name = scientific_name),
                     new.species[irow,] %>%
                     dplyr::select(scientific.name,genus,species))) == 0){
     insert.species(myDB,
@@ -140,11 +140,11 @@ for (irow in seq(1,nrow(new.record))){
 ################################################################################
 
 trait.data <- read.csv("./data/new.traits.csv") %>%
-  rename(short = Species) %>%
+  dplyr::rename(short = Species) %>%
   left_join(new.species,
             by = "short") %>%
   group_by(scientific.name,species) %>%
-  summarise(N = length(!is.na(Q10)),
+  dplyr::summarise(N = length(!is.na(Q10)),
             Q10 = mean(Q10,na.rm = TRUE),
             SLA = mean(SLA,na.rm = TRUE),
             .groups = "keep") %>%
@@ -158,8 +158,6 @@ trait.data <- read.csv("./data/new.traits.csv") %>%
 traits <- get.table(myDB,"traits")
 newid <- max(traits[["id"]]) + 1
 
-
-stop()
 ccitation_id <- 34
 csite_id <- 12
 variables <- get.table(myDB,"variables")
@@ -184,6 +182,6 @@ for (irow in seq(1,nrow(trait.data))){
 
 }
 
-
+traits <- get.table(myDB,"traits")
 
 dbDisconnectAll()
