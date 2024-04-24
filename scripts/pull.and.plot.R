@@ -7,7 +7,7 @@ library(RMySQL)
 library(ggthemes)
 
 myDB = dbConnect(RMySQL::MySQL(),
-                 dbname='newLianaDB',
+                 dbname='LianaDB',
                  host='localhost',
                  port=3306,
                  user='user',
