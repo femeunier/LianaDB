@@ -30,13 +30,13 @@ source("./scripts/create.traits.R")
 
 ################################################################################
 # Option 3: use R files
-# LianaDB <- list(citations = citations,
-#                 sites = sites,
-#                 species = species,
-#                 traits = traits,
-#                 variables = variables,
-#                 treatment = treatment,
-#                 covariates = covariates)
+# LianaDB <- list(citations = get.table(myDB,"citations"),
+#                 sites = get.table(myDB,"sites"),
+#                 species = get.table(myDB,"species"),
+#                 traits = get.table(myDB,"traits"),
+#                 variables = get.table(myDB,"variables"),
+#                 treatment = get.table(myDB,"treatment"),
+#                 covariates = get.table(myDB,"covariates"))
 # saveRDS(LianaDB,
 #         "./databases/LianaDB.RDS")
 
