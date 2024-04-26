@@ -69,7 +69,7 @@ ggplot(data = all.df) +
 ################################################################################
 # Table 2
 
-all.df %>%
+View(all.df %>%
   filter(growth_form == "liana") %>%
   group_by(variable_name) %>%
   dplyr::summarise(m = mean(mean,na.rm = TRUE),
@@ -80,12 +80,12 @@ all.df %>%
             Nref = length(unique(citation_id)),
             Nspecies = length(unique(species_id)),
             .groups = "keep") %>%
-  mutate(value = paste0(round(m, digits = 2),"\r\n",
-                        "(",round(Min, digits = 2)," - ",round(Max, digits = 2),")")) %>%
+  mutate(value = paste0(round(m, digits = 8),"\r\n",
+                        "(",round(Min, digits = 8)," - ",round(Max, digits = 8),")")) %>%
   mutate(ref = paste0(N," - ",Nspecies," - ",Nref)) %>%
   left_join(variables,
             by = "variable_name") %>%
-  dplyr::select(variable_name,units,description,value,ref)
+  dplyr::select(variable_name,units,description,ref,value))
 
 ###############################################################################
 # Barplot per species

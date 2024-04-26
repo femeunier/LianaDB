@@ -37,8 +37,8 @@ source("./scripts/create.traits.R")
 #                 variables = get.table(myDB,"variables"),
 #                 treatment = get.table(myDB,"treatment"),
 #                 covariates = get.table(myDB,"covariates"))
-# saveRDS(LianaDB,
-#         "./databases/LianaDB.RDS")
+saveRDS(LianaDB,
+        "./databases/LianaDB.RDS")
 
 LianaDB <- readRDS("./databases/LianaDB.RDS")
 
